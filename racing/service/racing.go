@@ -1,9 +1,12 @@
 package service
 
 import (
+	"time"
+
+	"golang.org/x/net/context"
+
 	"git.neds.sh/matty/entain/racing/db"
 	"git.neds.sh/matty/entain/racing/proto/racing"
-	"golang.org/x/net/context"
 )
 
 type Racing interface {
@@ -27,5 +30,20 @@ func (s *racingService) ListRaces(ctx context.Context, in *racing.ListRacesReque
 		return nil, err
 	}
 
+	s.calculateStatus(races)
+
 	return &racing.ListRacesResponse{Races: races}, nil
+}
+
+func (s *racingService) calculateStatus(races []*racing.Race) {
+	currentTimeUTC := time.Now().UTC()
+
+	for _, race := range races {
+		race.Status = "OPEN"
+
+		// check if race advertised_start_time (in UTC) is before current time (in UTC)
+		if race.AdvertisedStartTime.AsTime().UTC().Before(currentTimeUTC) {
+			race.Status = "CLOSED"
+		}
+	}
 }
