@@ -24,6 +24,8 @@ message ListRacesResponse {
 // Filter for listing races.
 message ListRacesRequestFilter {
   repeated int64 meeting_ids = 1;
+  // Visible - Optional value will be nil if not provided allowing the call to fetch all races
+  optional bool visible = 2;
 }
 
 /* Resources */
