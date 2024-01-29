@@ -18,7 +18,7 @@ type RacesRepo interface {
 	Init() error
 
 	// List will return a list of races.
-	List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
+	List(filter *racing.ListRacesRequestFilter, orderBy *string) ([]*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -43,7 +43,7 @@ func (r *racesRepo) Init() error {
 	return err
 }
 
-func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error) {
+func (r *racesRepo) List(filter *racing.ListRacesRequestFilter, orderBy *string) ([]*racing.Race, error) {
 	var (
 		err   error
 		query string
@@ -53,6 +53,8 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 	query = getRaceQueries()[racesList]
 
 	query, args = r.applyFilter(query, filter)
+
+	query = r.applyOrder(query, orderBy)
 
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
@@ -96,7 +98,19 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 	return query, args
 }
 
-func (m *racesRepo) scanRaces(
+func (r *racesRepo) applyOrder(query string, order *string) string {
+	// adding order by clause to sort by default
+	query += " ORDER BY advertised_start_time"
+
+	// NB - assumption that asc or desc will be sent in order-by clause
+	if order != nil && len(*order) > 0 {
+		query += " " + strings.ToUpper(*order)
+	}
+
+	return query
+}
+
+func (r *racesRepo) scanRaces(
 	rows *sql.Rows,
 ) ([]*racing.Race, error) {
 	var races []*racing.Race
