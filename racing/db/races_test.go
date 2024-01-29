@@ -28,3 +28,15 @@ func Test_ListRaces_WithVisibleFilter(t *testing.T) {
 	// check the argument value matches the filter value
 	assert.Equal(t, retArgs[0], &visible)
 }
+
+func Test_ListRaces_WithOrderBy(t *testing.T) {
+	query := getRaceQueries()[racesList]
+	order := "desc"
+	expectedQuery := query + " ORDER BY advertised_start_time DESC"
+
+	repo := racesRepo{}
+	retQuery := repo.applyOrder(query, &order)
+
+	// Check the correctness of the query
+	assert.Equal(t, expectedQuery, retQuery)
+}
