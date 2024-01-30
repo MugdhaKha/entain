@@ -19,6 +19,9 @@ type RacesRepo interface {
 
 	// List will return a list of races.
 	List(filter *racing.ListRacesRequestFilter, orderBy *string) ([]*racing.Race, error)
+
+	// Get will return single race based on race ID.
+	Get(id int64) (*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -62,6 +65,33 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter, orderBy *string)
 	}
 
 	return r.scanRaces(rows)
+}
+
+func (r *racesRepo) Get(id int64) (*racing.Race, error) {
+	var (
+		err   error
+		query string
+	)
+
+	query = getRaceQueries()[raceGet]
+
+	rows, err := r.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// re-using the funcs
+	races, err := r.scanRaces(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(races) == 1 {
+		return races[0], nil
+	}
+
+	// if more than 1 or no race is returned
+	return nil, nil
 }
 
 func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFilter) (string, []interface{}) {
@@ -115,6 +145,8 @@ func (r *racesRepo) scanRaces(
 ) ([]*racing.Race, error) {
 	var races []*racing.Race
 
+	currentTimeUTC := time.Now().UTC()
+
 	for rows.Next() {
 		var race racing.Race
 		var advertisedStart time.Time
@@ -133,6 +165,17 @@ func (r *racesRepo) scanRaces(
 		}
 
 		race.AdvertisedStartTime = ts
+
+		/*
+			Shifted the race status calculation here from the racing service. Status calculation is an improvement of Q3.
+			Reason:
+				- Less complexity: this is already iterating through the races individually
+				- Optimisation: do not have to explicitly call any function from multiple places to calculate the status
+		*/
+		race.Status = "OPEN"
+		if race.AdvertisedStartTime.AsTime().UTC().Before(currentTimeUTC) {
+			race.Status = "CLOSED"
+		}
 
 		races = append(races, &race)
 	}
