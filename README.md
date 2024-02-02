@@ -114,3 +114,23 @@ go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway git
 - [Google API Design](https://cloud.google.com/apis/design)
 - [Go Modules](https://golang.org/ref/mod)
 - [Ubers Go Style Guide](https://github.com/uber-go/guide/blob/2910ce2e11d0e0cba2cece2c60ae45e3a984ffe5/style.md)
+
+### Updates
+1. Example request for races that are `visible` only...
+   > curl -X 'http://localhost:8000/v1/list-races' \
+     -H 'Content-Type: application/json' \
+     -d '{
+      "filter":{
+          "visible": true
+      }
+}'
+
+2. Example request for races that are `ordered` with `desc` order only...
+   > curl -X 'http://localhost:8000/v1/list-races' \
+     -H 'Content-Type: application/json' \
+    -d '{
+       "order_by": "desc"
+}'
+
+4. Example request to get race using id only. Here we are trying to retrieve the race with id `43`
+   > curl --X 'http://localhost:8000/v1/race/43'
