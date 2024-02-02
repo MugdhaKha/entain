@@ -134,3 +134,14 @@ go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway git
 
 4. Example request to get race using id only. Here we are trying to retrieve the race with id `43`
    > curl --X 'http://localhost:8000/v1/race/43'
+
+5. The sports api created is has a basic rpc call to get list of races. I have added the fields based on what I think is required for an event. I did want to add Status in there but sports statuses are little bit more complicated and I thought it could be added later on since this is just a basic api call.
+    > The list-events call gets the events from the repository. The repository structure can be improvised by splitting it in multiple tables as the api grows (such as teams, players, markets, selection etc.) \
+   > \
+   > Example request to get list of events from the repository...... \
+   > \
+   > curl -X 'http://localhost:8000/v1/list-events' \
+   -H 'Content-Type: application/json' \
+   -d '{
+   "filter":{}
+   }'
